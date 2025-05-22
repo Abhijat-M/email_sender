@@ -9,15 +9,14 @@
     <style>
         :root {
             --primary: #2B3A67;
-            /* Professional navy blue */
             --secondary: #3A5F7D;
-            /* Soft steel blue */
             --background: linear-gradient(135deg, #F0F9FF 0%, #E6F4FF 100%);
             --glass: rgba(255, 255, 255, 0.85);
             --glass-border: rgba(220, 220, 220, 0.3);
             --text: #333333;
             --accent: #4CAF50;
-            /* Professional green for success states */
+            --error: #d32f2f;
+            --success: #388e3c;
         }
 
         * {
@@ -35,7 +34,8 @@
             align-items: center;
             color: var(--text);
             padding: 2rem;
-            overflow: hidden;
+            overflow-x: hidden;
+            position: relative;
         }
 
         .container {
@@ -47,6 +47,7 @@
             width: 100%;
             max-width: 650px;
             border: 1px solid var(--glass-border);
+            position: relative;
         }
 
         h1 {
@@ -70,6 +71,7 @@
 
         .input-group {
             margin-bottom: 1.25rem;
+            position: relative;
         }
 
         label {
@@ -93,13 +95,24 @@
             resize: vertical;
             min-height: 50px;
             max-height: 300px;
+            outline: none;
         }
 
         input:focus,
         textarea:focus {
-            outline: none;
             border-color: var(--primary);
             box-shadow: 0 0 0 2px rgba(43, 58, 103, 0.15);
+        }
+
+        .error-message {
+            color: var(--error);
+            font-size: 0.875rem;
+            margin-top: 0.25rem;
+            display: none;
+        }
+
+        .input-group.error input {
+            border-color: var(--error);
         }
 
         .button-group {
@@ -119,6 +132,7 @@
             cursor: pointer;
             transition: all 0.3s ease;
             position: relative;
+            overflow: hidden;
         }
 
         button.secondary {
@@ -149,12 +163,37 @@
             transform: translate(-50%, -50%) scale(1);
         }
 
+        .spinner {
+            display: inline-block;
+            width: 16px;
+            height: 16px;
+            border: 2px solid #fff;
+            border-top-color: transparent;
+            border-radius: 50%;
+            animation: spin 1s infinite linear;
+            position: absolute;
+            top: 50%;
+            left: 1rem;
+            transform: translateY(-50%);
+            opacity: 0;
+            pointer-events: none;
+        }
+
+        .spinner.active {
+            opacity: 1;
+        }
+
+        @keyframes spin {
+            to {
+                transform: rotate(360deg);
+            }
+        }
+
         textarea {
             min-height: 150px;
             font-family: 'Inter', sans-serif;
         }
 
-        /* Dynamic typing effect */
         .dynamic::before {
             content: attr(data-placeholder);
             color: rgba(51, 51, 51, 0.4);
@@ -180,6 +219,42 @@
             }
         }
 
+        .toast {
+            position: fixed;
+            bottom: 2rem;
+            right: 2rem;
+            padding: 1rem 1.5rem;
+            border-radius: 8px;
+            color: white;
+            font-weight: 500;
+            opacity: 0;
+            transform: translateY(20px);
+            transition: all 0.3s ease;
+            z-index: 1000;
+            pointer-events: none;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+
+        .toast.success {
+            background: var(--success);
+        }
+
+        .toast.error {
+            background: var(--error);
+        }
+
+        .toast.show {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .toast-icon {
+            width: 18px;
+            height: 18px;
+        }
+
         @media (max-width: 600px) {
             .container {
                 padding: 1.5rem;
@@ -192,31 +267,58 @@
             button {
                 flex: 1;
                 padding: 0.625rem 1rem;
+                font-size: 0.9rem;
+            }
+
+            .spinner {
+                left: 0.75rem;
             }
         }
     </style>
 </head>
 
 <body>
-    <div class="container">
-        <h1>Email Composer</h1>
-        <div class="input-group">
-            <label for="to">Recipient</label>
-            <input type="email" id="to" placeholder="example@domain.com" required />
-        </div>
-        <div class="input-group">
-            <label for="subject">Subject</label>
-            <input type="text" id="subject" placeholder="Your email subject..." required />
-        </div>
-        <div class="input-group">
-            <label for="emailBody">Content</label>
-            <textarea id="emailBody" class="dynamic" data-placeholder="Type your message..."
-                data-placeholder2="AI is thinking..." data-placeholder3="Generating content..."></textarea>
-        </div>
-        <div class="button-group">
-            <button id="genBtn" class="secondary">Generate ✨</button>
-            <button id="sendBtn">Send 🚀</button>
-        </div>
+    <div class="container" role="main" aria-labelledby="email-composer">
+        <h1 id="email-composer">Email Composer</h1>
+        <form id="emailForm" novalidate>
+            <div class="input-group" id="toGroup">
+                <label for="to">Recipient</label>
+                <input type="email" id="to" placeholder="example@domain.com" required aria-required="true"
+                    aria-describedby="toError" />
+                <div class="error-message" id="toError" role="alert"></div>
+            </div>
+            <div class="input-group" id="subjectGroup">
+                <label for="subject">Subject</label>
+                <input type="text" id="subject" placeholder="Your email subject..." required aria-required="true"
+                    aria-describedby="subjectError" />
+                <div class="error-message" id="subjectError" role="alert"></div>
+            </div>
+            <div class="input-group">
+                <label for="emailBody">Content</label>
+                <textarea id="emailBody" class="dynamic" data-placeholder="Type your message..."
+                    data-placeholder2="AI is thinking..." data-placeholder3="Generating content..."
+                    aria-describedby="bodyError"></textarea>
+                <div class="error-message" id="bodyError" role="alert"></div>
+            </div>
+            <div class="button-group">
+                <button id="genBtn" class="secondary" aria-label="Generate email content">
+                    <span class="spinner" id="genSpinner"></span>
+                    <span id="genText">Generate ✨</span>
+                </button>
+                <button id="sendBtn" aria-label="Send email">
+                    <span class="spinner" id="sendSpinner"></span>
+                    <span id="sendText">Send 🚀</span>
+                </button>
+            </div>
+        </form>
+    </div>
+
+    <div class="toast" role="status" aria-live="polite" id="toast">
+        <svg class="toast-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+            stroke-linecap="round" stroke-linejoin="round">
+            <polyline points="20 6 9 17 4 12"></polyline>
+        </svg>
+        <span id="toastMessage"></span>
     </div>
 
     <script>
@@ -226,13 +328,67 @@
             this.style.height = (this.scrollHeight) + 'px';
         });
 
+        function showToast(message, type = 'success') {
+            const toast = document.getElementById('toast');
+            const toastMessage = document.getElementById('toastMessage');
+            toastMessage.textContent = message;
+            toast.className = `toast ${type} show`;
+
+            setTimeout(() => {
+                toast.classList.remove('show');
+            }, 3000);
+        }
+
+        function validateEmail(email) {
+            const re = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+            return re.test(String(email).toLowerCase());
+        }
+
+        function validateForm() {
+            const to = document.getElementById('to');
+            const subject = document.getElementById('subject');
+            let isValid = true;
+
+            // Reset errors
+            document.querySelectorAll('.input-group').forEach(group => {
+                group.classList.remove('error');
+            });
+            document.querySelectorAll('.error-message').forEach(el => el.textContent = '');
+
+            if (!to.value.trim()) {
+                showError('toGroup', 'Recipient email is required');
+                isValid = false;
+            } else if (!validateEmail(to.value)) {
+                showError('toGroup', 'Please enter a valid email address');
+                isValid = false;
+            }
+
+            if (!subject.value.trim()) {
+                showError('subjectGroup', 'Subject is required');
+                isValid = false;
+            }
+
+            return isValid;
+        }
+
+        function showError(groupId, message) {
+            const group = document.getElementById(groupId);
+            const errorEl = group.querySelector('.error-message');
+            group.classList.add('error');
+            errorEl.textContent = message;
+            errorEl.style.display = 'block';
+        }
+
         async function generateEmail() {
+            if (!validateForm()) return;
+
             const subject = document.getElementById('subject').value;
             const genBtn = document.getElementById('genBtn');
-            const originalText = genBtn.textContent;
+            const genText = document.getElementById('genText');
+            const genSpinner = document.getElementById('genSpinner');
 
-            genBtn.textContent = "Generating...";
             genBtn.disabled = true;
+            genSpinner.classList.add('active');
 
             try {
                 const resp = await fetch('/generate', {
@@ -240,27 +396,33 @@
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ subject })
                 });
-                const data = await resp.json();
 
-                document.getElementById('emailBody').value = data.body;
-                animateText(data.body);
+                if (!resp.ok) throw new Error('Failed to generate email');
+
+                const data = await resp.json();
+                const textarea = document.getElementById('emailBody');
+                textarea.value = '';
+                animateText(data.body, textarea);
+                showToast('Email generated successfully', 'success');
+            } catch (error) {
+                console.error(error);
+                showToast('Error generating email. Please try again.', 'error');
             } finally {
-                genBtn.textContent = originalText;
                 genBtn.disabled = false;
+                genSpinner.classList.remove('active');
+                genText.textContent = "Generate ✨";
             }
         }
 
-        // Typing animation for generated content
-        function animateText(text) {
-            const textarea = document.getElementById('emailBody');
+        function animateText(text, element) {
             let index = 0;
-            textarea.value = '';
+            element.value = '';
 
             const typingInterval = setInterval(() => {
                 if (index < text.length) {
-                    textarea.value += text.charAt(index);
+                    element.value += text.charAt(index);
                     index++;
-                    textarea.scrollTop = textarea.scrollHeight;
+                    element.scrollTop = element.scrollHeight;
                 } else {
                     clearInterval(typingInterval);
                 }
@@ -268,14 +430,17 @@
         }
 
         async function sendEmail() {
+            if (!validateForm()) return;
+
             const to = document.getElementById('to').value;
             const subject = document.getElementById('subject').value;
             const body = document.getElementById('emailBody').value;
             const sendBtn = document.getElementById('sendBtn');
-            const originalText = sendBtn.textContent;
+            const sendText = document.getElementById('sendText');
+            const sendSpinner = document.getElementById('sendSpinner');
 
-            sendBtn.textContent = "Sending...";
             sendBtn.disabled = true;
+            sendSpinner.classList.add('active');
 
             try {
                 const resp = await fetch('/send', {
@@ -283,16 +448,33 @@
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ to, subject, body })
                 });
+
+                if (!resp.ok) throw new Error('Failed to send email');
+
                 const result = await resp.json();
-                alert(result.status || result.error || "Success!");
+                showToast(result.status || 'Email sent successfully!', 'success');
+            } catch (error) {
+                console.error(error);
+                showToast('Error sending email. Please check your connection.', 'error');
             } finally {
-                sendBtn.textContent = originalText;
                 sendBtn.disabled = false;
+                sendSpinner.classList.remove('active');
+                sendText.textContent = "Send 🚀";
             }
         }
 
         document.getElementById('genBtn').addEventListener('click', generateEmail);
         document.getElementById('sendBtn').addEventListener('click', sendEmail);
+
+        // Keyboard accessibility for buttons
+        document.querySelectorAll('button').forEach(btn => {
+            btn.addEventListener('keydown', (e) => {
+                if (e.key === 'Enter' || e.key === ' ') {
+                    e.preventDefault();
+                    btn.click();
+                }
+            });
+        });
     </script>
 </body>
 
