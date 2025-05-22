@@ -219,7 +219,81 @@
         </div>
     </div>
 
-    <!-- Script remains the same as previous version -->
+    <script>
+        // Dynamic textarea height
+        document.getElementById('emailBody').addEventListener('input', function () {
+            this.style.height = 'auto';
+            this.style.height = (this.scrollHeight) + 'px';
+        });
+
+        async function generateEmail() {
+            const subject = document.getElementById('subject').value;
+            const genBtn = document.getElementById('genBtn');
+            const originalText = genBtn.textContent;
+
+            genBtn.textContent = "Generating...";
+            genBtn.disabled = true;
+
+            try {
+                const resp = await fetch('/generate', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ subject })
+                });
+                const data = await resp.json();
+
+                document.getElementById('emailBody').value = data.body;
+                animateText(data.body);
+            } finally {
+                genBtn.textContent = originalText;
+                genBtn.disabled = false;
+            }
+        }
+
+        // Typing animation for generated content
+        function animateText(text) {
+            const textarea = document.getElementById('emailBody');
+            let index = 0;
+            textarea.value = '';
+
+            const typingInterval = setInterval(() => {
+                if (index < text.length) {
+                    textarea.value += text.charAt(index);
+                    index++;
+                    textarea.scrollTop = textarea.scrollHeight;
+                } else {
+                    clearInterval(typingInterval);
+                }
+            }, 30);
+        }
+
+        async function sendEmail() {
+            const to = document.getElementById('to').value;
+            const subject = document.getElementById('subject').value;
+            const body = document.getElementById('emailBody').value;
+            const sendBtn = document.getElementById('sendBtn');
+            const originalText = sendBtn.textContent;
+
+            sendBtn.textContent = "Sending...";
+            sendBtn.disabled = true;
+
+            try {
+                const resp = await fetch('/send', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ to, subject, body })
+                });
+                const result = await resp.json();
+                alert(result.status || result.error || "Success!");
+            } finally {
+                sendBtn.textContent = originalText;
+                sendBtn.disabled = false;
+            }
+        }
+
+        document.getElementById('genBtn').addEventListener('click', generateEmail);
+        document.getElementById('sendBtn').addEventListener('click', sendEmail);
+    </script>
 </body>
 
 </html>
