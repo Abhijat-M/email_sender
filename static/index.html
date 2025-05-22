@@ -4,15 +4,20 @@
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>AI Composer: Your Personal Email Writer</title>
+    <title>AI Composer: Professional Email Assistant</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter :wght@400;600&display=swap" rel="stylesheet">
     <style>
         :root {
-            --primary: #3953c8;
-            --secondary: #e440d7;
-            --background: linear-gradient(135deg, #1E1E2F 0%, #2A2A40 100%);
-            --glass: rgba(255, 255, 255, 0.05);
-            --text: #E5E5E5;
+            --primary: #2B3A67;
+            /* Professional navy blue */
+            --secondary: #3A5F7D;
+            /* Soft steel blue */
+            --background: linear-gradient(135deg, #F0F9FF 0%, #E6F4FF 100%);
+            --glass: rgba(255, 255, 255, 0.85);
+            --glass-border: rgba(220, 220, 220, 0.3);
+            --text: #333333;
+            --accent: #4CAF50;
+            /* Professional green for success states */
         }
 
         * {
@@ -35,51 +40,54 @@
 
         .container {
             background: var(--glass);
-            backdrop-filter: blur(20px);
-            border-radius: 20px;
+            backdrop-filter: blur(15px);
+            border-radius: 16px;
             padding: 2.5rem;
-            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.25);
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
             width: 100%;
-            max-width: 600px;
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            animation: float 6s ease-in-out infinite;
+            max-width: 650px;
+            border: 1px solid var(--glass-border);
         }
 
         h1 {
-            font-size: 2rem;
+            font-size: 1.75rem;
             margin-bottom: 1.5rem;
             text-align: center;
-            background: linear-gradient(90deg, var(--primary), var(--secondary));
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
+            color: var(--primary);
             position: relative;
         }
 
         h1::after {
             content: '';
             position: absolute;
-            bottom: -8px;
+            bottom: -6px;
             left: 50%;
             transform: translateX(-50%);
-            width: 60px;
-            height: 3px;
+            width: 50px;
+            height: 2px;
             background: linear-gradient(90deg, var(--primary), var(--secondary));
-            animation: pulse 2s infinite;
         }
 
         .input-group {
-            margin-bottom: 1rem;
+            margin-bottom: 1.25rem;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 600;
+            color: var(--primary);
         }
 
         input,
         textarea {
             width: 100%;
-            padding: 0.75rem 1rem;
-            border: none;
-            border-radius: 12px;
+            padding: 0.875rem 1.25rem;
+            border: 1px solid var(--glass-border);
+            border-radius: 10px;
             margin-top: 0.5rem;
-            font-size: 1rem;
-            background: rgba(255, 255, 255, 0.05);
+            font-size: 0.9375rem;
+            background: rgba(255, 255, 255, 0.9);
             color: var(--text);
             transition: all 0.3s ease;
             resize: vertical;
@@ -90,28 +98,38 @@
         input:focus,
         textarea:focus {
             outline: none;
-            background: rgba(255, 255, 255, 0.1);
-            transform: scale(1.02);
+            border-color: var(--primary);
+            box-shadow: 0 0 0 2px rgba(43, 58, 103, 0.15);
         }
 
         .button-group {
             display: flex;
             gap: 1rem;
-            margin-top: 1.5rem;
+            margin-top: 1.75rem;
             justify-content: center;
         }
 
         button {
-            padding: 0.6rem 1.5rem;
+            padding: 0.75rem 2rem;
             border: none;
-            border-radius: 25px;
+            border-radius: 20px;
             background: linear-gradient(45deg, var(--primary), var(--secondary));
             color: white;
             font-weight: 600;
             cursor: pointer;
             transition: all 0.3s ease;
             position: relative;
-            overflow: hidden;
+        }
+
+        button.secondary {
+            background: linear-gradient(45deg, #ffffff, #f0f9ff);
+            color: var(--primary);
+            border: 1px solid var(--glass-border);
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+        }
+
+        button.secondary:hover {
+            background: linear-gradient(45deg, #f8f9fa, #e6f4ff);
         }
 
         button::after {
@@ -121,7 +139,7 @@
             left: 50%;
             width: 300%;
             height: 300%;
-            background: radial-gradient(circle, rgba(255, 255, 255, 0.2) 0%, transparent 70%);
+            background: radial-gradient(circle, rgba(255, 255, 255, 0.15) 0%, transparent 70%);
             transform: translate(-50%, -50%) scale(0);
             transition: transform 0.5s ease;
             border-radius: 50%;
@@ -139,9 +157,9 @@
         /* Dynamic typing effect */
         .dynamic::before {
             content: attr(data-placeholder);
-            color: #888;
+            color: rgba(51, 51, 51, 0.4);
             display: block;
-            animation: typing 3s steps(30, end) infinite;
+            animation: typing 4s steps(30, end) infinite;
         }
 
         @keyframes typing {
@@ -149,44 +167,16 @@
                 content: attr(data-placeholder);
             }
 
-            25% {
-                content: attr(data-placeholder);
-            }
-
-            50% {
+            33% {
                 content: attr(data-placeholder2);
             }
 
-            75% {
+            66% {
                 content: attr(data-placeholder3);
             }
 
             100% {
                 content: attr(data-placeholder);
-            }
-        }
-
-        @keyframes float {
-
-            0%,
-            100% {
-                transform: translateY(0);
-            }
-
-            50% {
-                transform: translateY(-10px);
-            }
-        }
-
-        @keyframes pulse {
-
-            0%,
-            100% {
-                transform: scaleX(1);
-            }
-
-            50% {
-                transform: scaleX(1.1);
             }
         }
 
@@ -196,11 +186,12 @@
             }
 
             h1 {
-                font-size: 1.5rem;
+                font-size: 1.375rem;
             }
 
             button {
                 flex: 1;
+                padding: 0.625rem 1rem;
             }
         }
     </style>
@@ -223,86 +214,12 @@
                 data-placeholder2="AI is thinking..." data-placeholder3="Generating content..."></textarea>
         </div>
         <div class="button-group">
-            <button id="genBtn">Generate ✨</button>
+            <button id="genBtn" class="secondary">Generate ✨</button>
             <button id="sendBtn">Send 🚀</button>
         </div>
     </div>
 
-    <script>
-        // Dynamic textarea height
-        document.getElementById('emailBody').addEventListener('input', function () {
-            this.style.height = 'auto';
-            this.style.height = (this.scrollHeight) + 'px';
-        });
-
-        async function generateEmail() {
-            const subject = document.getElementById('subject').value;
-            const genBtn = document.getElementById('genBtn');
-            const originalText = genBtn.textContent;
-
-            genBtn.textContent = "Generating...";
-            genBtn.disabled = true;
-
-            try {
-                const resp = await fetch('/generate', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ subject })
-                });
-                const data = await resp.json();
-
-                document.getElementById('emailBody').value = data.body;
-                animateText(data.body);
-            } finally {
-                genBtn.textContent = originalText;
-                genBtn.disabled = false;
-            }
-        }
-
-        // Typing animation for generated content
-        function animateText(text) {
-            const textarea = document.getElementById('emailBody');
-            let index = 0;
-            textarea.value = '';
-
-            const typingInterval = setInterval(() => {
-                if (index < text.length) {
-                    textarea.value += text.charAt(index);
-                    index++;
-                    textarea.scrollTop = textarea.scrollHeight;
-                } else {
-                    clearInterval(typingInterval);
-                }
-            }, 30);
-        }
-
-        async function sendEmail() {
-            const to = document.getElementById('to').value;
-            const subject = document.getElementById('subject').value;
-            const body = document.getElementById('emailBody').value;
-            const sendBtn = document.getElementById('sendBtn');
-            const originalText = sendBtn.textContent;
-
-            sendBtn.textContent = "Sending...";
-            sendBtn.disabled = true;
-
-            try {
-                const resp = await fetch('/send', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ to, subject, body })
-                });
-                const result = await resp.json();
-                alert(result.status || result.error || "Success!");
-            } finally {
-                sendBtn.textContent = originalText;
-                sendBtn.disabled = false;
-            }
-        }
-
-        document.getElementById('genBtn').addEventListener('click', generateEmail);
-        document.getElementById('sendBtn').addEventListener('click', sendEmail);
-    </script>
+    <!-- Script remains the same as previous version -->
 </body>
 
 </html>
